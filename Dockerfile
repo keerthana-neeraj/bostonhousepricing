@@ -14,10 +14,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 # Set the default PORT environment variable (Heroku uses $PORT, you can override it if needed)
-ENV PORT=5000
+ENV PORT=8080
 
 # Expose the port the app will run on
 EXPOSE $PORT
 
 # Start the app with gunicorn
-CMD ["gunicorn", "--workers=4", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--workers=4", "--bind", "0.0.0.0:8080", "app:app"]
