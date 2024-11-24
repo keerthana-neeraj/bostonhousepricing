@@ -24,11 +24,11 @@ jobs:
 
       # Build your Docker container.
       - name: Build Docker image
-        run: docker build -t my-app:latest .
+        run: docker build -t keerthanaconnect/my-app:latest
 
       # Push Docker image to Docker Hub (Optional: required only if you're using a private Docker registry)
       - name: Push Docker image to Docker Hub
-        run: docker push my-app:latest
+        run: docker push keerthanaconnect/my-app:latest
 
       # Deploy Docker image to Render via API
       - name: Deploy to Render
