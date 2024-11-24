@@ -1,59 +1,44 @@
 # Your workflow name.
-name: Deploy to heroku.
+name: Deploy to Render
 
 # Run workflow on every push to main branch.
 on:
   push:
     branches: [main]
 
-# Your workflows jobs.
+# Workflow jobs.
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Check-out your repository.
+      # Check out your repository.
       - name: Checkout
         uses: actions/checkout@v2
 
-
-### ⬇ IMPORTANT PART ⬇ ###
-
-      - name: Build, Push and Release a Docker container to Heroku. # Your custom step name
-        uses: gonuit/heroku-docker-deploy@v1.3.3 # GitHub action name (leave it as it is).
+      # Log in to Docker Hub (Optional: required only if you're using a private Docker registry)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
-          # Below you must provide variables for your Heroku app.
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-          # The email address associated with your Heroku account.
-          # If you don't want to use repository secrets (which is recommended) you can do:
-          # email: my.email@example.com
-          email: ${{ secrets.HEROKU_EMAIL }}
-          
-          # Heroku API key associated with provided user's email.
-          # Api Key is available under your Heroku account settings.
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          
-          # Name of the heroku application to which the build is to be sent.
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+      # Build your Docker container.
+      - name: Build Docker image
+        run: docker build -t my-app:latest .
 
-          # (Optional, default: "./")
-          # Dockerfile directory.
-          # For example, if you have a Dockerfile in the root of your project, leave it as follows:
-          dockerfile_directory: ./
+      # Push Docker image to Docker Hub (Optional: required only if you're using a private Docker registry)
+      - name: Push Docker image to Docker Hub
+        run: docker push my-app:latest
 
-          # (Optional, default: "Dockerfile")
-          # Dockerfile name.
-          dockerfile_name: Dockerfile
-
-          # (Optional, default: "")
-          # Additional options of docker build command.
-          docker_options: "--no-cache"
-
-          # (Optional, default: "web")
-          # Select the process type for which you want the docker container to be uploaded.
-          # By default, this argument is set to "web".
-          # For more information look at https://devcenter.heroku.com/articles/process-model
-          process_type: web
-          
-   
-          
-### ⬆ IMPORTANT PART ⬆ ###
+      # Deploy Docker image to Render via API
+      - name: Deploy to Render
+        run: |
+          curl -X POST \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "serviceId": "<YOUR_RENDER_SERVICE_ID>",
+              "clearCache": false
+            }' \
+            https://api.render.com/v1/services/<YOUR_RENDER_SERVICE_ID>/deploys
